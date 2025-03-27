@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Pain Level Detection System</title>
+</head>
+<body>
+    <h1>Pain Detection System</h1>
+    
+    <div style="display: flex; justify-content: space-between;">
+        <div style="width: 60%;">
+            <h2>Real-time Analysis</h2>
+            <img src="{{ url_for('video_feed') }}" width="640" height="480">
+        </div>
+        
+        <div style="width: 35%;">
+            <h2>Image Upload</h2>
+            <form method="post" action="/predict" enctype="multipart/form-data">
+                <input type="file" name="file" accept="image/*">
+                <input type="submit" value="Analyze Image">
+            </form>
+            <div id="result"></div>
+        </div>
+    </div>
+
+    <script>
+        document.querySelector('form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                if (data.error) {
+                    document.getElementById('result').innerHTML = `Error: ${data.error}`;
+                } else {
+                    document.getElementById('result').innerHTML = `
+                        <h3>Result:</h3>
+                        <p>Pain Level: ${data.predicted_pain_level}</p>
+                        <p>Confidence: ${(data.confidence * 100).toFixed(1)}%</p>
+                    `;
+                }
+            } catch (error) {
+                document.getElementById('result').innerHTML = `Error: ${error.message}`;
+            }
+        });
+    </script>
+</body>
+</html>
